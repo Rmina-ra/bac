@@ -98,6 +98,28 @@ def order_detail(request, pk):
         order.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+# cart
+@api_view(['POST'])
+def add_to_cart(request):
+    product_id = request.data.get('product_id')
+    quantity = int(request.data.get('quantity', 1))
+
+    if not product_id:
+        return Response({'error': 'Product ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    cart = request.session.get('cart', {})
+    cart[str(product_id)] = cart.get(str(product_id), 0) + quantity
+    request.session['cart'] = cart
+    return Response({'message': 'Product added to cart', 'cart': cart})
+
+@api_view(['DELETE'])
+def delete_from_cart(request, pk):
+    cart = request.session.get('cart', {})
+
+    if str(pk) in cart:
+        del cart[str(pk)] 
+        request.session['cart'] = cart
+        return Response({'message': 'Product removed from cart', 'cart': cart})
 
 
 
